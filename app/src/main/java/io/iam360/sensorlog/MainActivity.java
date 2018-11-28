@@ -241,17 +241,13 @@ class SensorData {
         gyrEvent = null;
         accEvent = null;
     }
-
     public String getStringData(){
-
         xaf=xaf+alpha*(accEvent.values[0]-xaf);
         yaf=yaf+alpha*(accEvent.values[1]-yaf);
         zaf=zaf+alpha*(accEvent.values[2]-zaf);
-
-        xgf = 1-k * gyrEvent.values[0];
-        ygf = 1-k * gyrEvent.values[1];
-        zgf = (1-k) * gyrEvent.values[2];
-
+        xgf = 1-k*gyrEvent.values[0];
+        ygf = 1-k*gyrEvent.values[1];
+        zgf = (1-k)*gyrEvent.values[2];
         return String.format("%d; %f; %f; %f; %f; %f; %f; %f; %f; %f; %f; %f; %f;\n", gyrEvent.timestamp,
                 accEvent.values[0], accEvent.values[1], accEvent.values[2], xaf,yaf,zaf,
                 gyrEvent.values[0], gyrEvent.values[1], gyrEvent.values[2], xgf, ygf, zgf);
