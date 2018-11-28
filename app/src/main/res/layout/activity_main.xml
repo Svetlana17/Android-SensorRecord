@@ -37,4 +37,37 @@
         android:layout_marginTop="150dp"
         android:enabled="true"
         android:text="Share" />
+
+    <EditText
+        android:id="@+id/editK"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginBottom="16dp"
+        android:ems="10"
+        android:hint="k"
+        android:inputType="number|numberDecimal" />
+
+    <EditText
+        android:id="@+id/editAlpha"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/editK"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="7dp"
+        android:ems="10"
+        android:hint="alpha"
+        android:inputType="number|numberDecimal" />
+
 </RelativeLayout>

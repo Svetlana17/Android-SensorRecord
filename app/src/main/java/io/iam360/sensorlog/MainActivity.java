@@ -3,20 +3,18 @@ package io.iam360.sensorlog;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener2;
 import android.hardware.SensorManager;
 import android.net.Uri;
-import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.File;
@@ -24,9 +22,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.util.LinkedList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -35,16 +30,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     SensorManager manager;
     Button buttonStart;
     Button buttonStop;
+    EditText editAlpha;
+    EditText editK;
     boolean isRunning;
     final String TAG = "SensorLog";
     FileWriter writer;
     Button shareButton;
-    char delimiter = ';';
 
     private SensorData data = new SensorData();
 
-    private static final char DEFAULT_SEPARATOR = ',';
-    //CSVFormat fmt = CSVFormat.EXCEL.withDelimiter(';');
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         buttonStart = (Button)findViewById(R.id.buttonStart);
         buttonStop = (Button)findViewById(R.id.buttonStop);
+        editAlpha = (EditText)findViewById(R.id.editAlpha);
+        editK = (EditText)findViewById(R.id.editK);
 
         buttonStart.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -70,9 +66,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 buttonStart.setEnabled(false);
                 buttonStop.setEnabled(true);
 
+                try {
+                    float alpha = Float.parseFloat(editAlpha.getText().toString());
+                    float k = Float.parseFloat(editK.getText().toString());
+
+                    data = new SensorData();
+                    data.setParams(alpha, k);
+                } catch (NumberFormatException e) {
+                    Toast.makeText(MainActivity.this, "Данные введены не верно", Toast.LENGTH_LONG).show();
+                }
+
+                File file = new File(getStorageDir(), "sensors.csv");
+                if(file.exists())
+                    file.delete();
+
                 Log.d(TAG, "Writing to " + getStorageDir());
                 try {
-                   writer = new FileWriter(new File(getStorageDir(), "sensors_" + System.currentTimeMillis() + ".csv"));
+                   writer = new FileWriter(file);
+                   writer.write("TIME;ACC X;ACC Y;ACC Z;ACC XF;ACC YF;ACC ZF;GYR X; GYR Y; GYR Z; GYR XF; GYR YF; GYR ZF;\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -84,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 return true;
             }
         });
+
         buttonStop.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -104,7 +116,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private String getStorageDir() {
         return this.getExternalFilesDir(null).getAbsolutePath();
-      //  return "/storage/emulated/0/Android/data/com.iam360.sensorlog/";
     }
 
     @Override
@@ -150,7 +161,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         try {
             zipFile.createNewFile();
             ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipFile));
-            //  out.setLevel(Deflater.DEFAULT_COMPRESSION);
             for (File file : fileList) {
                 zipFile(out, file);
             }
@@ -164,7 +174,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static void zipFile(ZipOutputStream zos, File file) throws IOException {
         zos.putNextEntry(new ZipEntry(file.getName()));
         FileInputStream fis = new FileInputStream(file);
-        //byte[] buffer = new byte[4092];
         byte[] buffer = new byte[10000];
         int byteCount = 0;
         try {
@@ -190,7 +199,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         emailIntent.setType("message/rfc822");
         emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + file));
         startActivity(Intent.createChooser(emailIntent, "Send data"));
-//    }
     }
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
@@ -203,10 +211,15 @@ class SensorData {
     private SensorEvent gyrEvent;
     private SensorEvent accEvent;
 
-    float xaf, yaf, zaf;
-    float xgf, ygf, zgf;
-    float alpha=0.05f;
-    float k=0.5f;
+    private float xaf, yaf, zaf;
+    private float xgf, ygf, zgf;
+    private float alpha = 0.05f;
+    private float k = 0.5f;
+
+    public void setParams(float alpha, float k){
+        this.alpha = alpha;
+        this.k = k;
+    }
 
     public void setGyr(SensorEvent gyrEvent){
         this.gyrEvent = gyrEvent;
